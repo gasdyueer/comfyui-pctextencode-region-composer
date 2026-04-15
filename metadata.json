@@ -1,0 +1,7 @@
+{
+  "name": "ComfyUI PCTextEncode Region Composer",
+  "description": "A visual tool for composing regional prompts for ComfyUI PCTextEncode nodes, featuring a drag-and-drop canvas and real-time syntax generation.",
+  "requestFramePermissions": [],
+  "C7": [],
+  "Xp": []
+}
