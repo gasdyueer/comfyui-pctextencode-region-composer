@@ -85,10 +85,24 @@ PC Region Composer ──prompt──▶ PC: Schedule prompt
 ├── web/
 │   ├── region_composer.js   # ComfyUI 前端扩展（Open Editor 按钮）
 │   └── editor/              # vite build 产物（可视化编辑器）
-├── App.tsx                  # React 编辑器主组件
-├── components/              # React 组件
-├── utils/                   # 工具函数（含 promptGenerator.ts）
-└── types.ts                 # TypeScript 类型定义
+├── src/                     # React 编辑器源码
+│   ├── App.tsx              # 主组件
+│   ├── index.tsx            # 入口
+│   ├── index.css            # 全局样式
+│   ├── constants.ts         # 常量与初始状态
+│   ├── types.ts             # TypeScript 类型定义
+│   ├── components/          # React 组件
+│   └── utils/               # 工具函数（含 promptGenerator.ts）
+├── docs/                    # 文档
+│   ├── 01-快速入门.md
+│   ├── 02-节点详解.md
+│   ├── 03-提示词语法大全.md
+│   ├── 04-区域提示与注意力耦合.md
+│   └── 05-LoRA调度与高级技巧.md
+├── index.html               # Vite 入口 HTML
+├── vite.config.ts           # Vite 配置
+├── tsconfig.json            # TypeScript 配置
+└── package.json             # 依赖管理
 ```
 
 ## 开发
@@ -102,8 +116,8 @@ npm run build        # 构建到 web/editor/
 ## 相关资源
 
 - [ComfyUI Prompt Control](https://github.com/asagi4/comfyui-prompt-control)
-- [区域提示与注意力耦合指南](./04-区域提示与注意力耦合.md)
-- [提示词语法大全](./03-提示词语法大全.md)
+- [区域提示与注意力耦合指南](./docs/04-区域提示与注意力耦合.md)
+- [提示词语法大全](./docs/03-提示词语法大全.md)
 
 ## 常见问题
 
