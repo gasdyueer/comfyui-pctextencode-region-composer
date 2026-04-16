@@ -1,13 +1,14 @@
 
 import React from 'react';
-import { Layout, BookOpen, Upload } from 'lucide-react';
+import { Layout, BookOpen, Upload, Layers } from 'lucide-react';
 
 interface HeaderProps {
   onOpenCheatSheet: () => void;
   onImport: () => void;
+  onOpenPresets: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onOpenCheatSheet, onImport }) => {
+const Header: React.FC<HeaderProps> = ({ onOpenCheatSheet, onImport, onOpenPresets }) => {
   return (
     <header className="h-14 border-b border-slate-800 bg-slate-900 flex items-center px-6 shrink-0">
       <div className="flex items-center gap-2 text-indigo-400">
@@ -22,6 +23,13 @@ const Header: React.FC<HeaderProps> = ({ onOpenCheatSheet, onImport }) => {
       >
         <BookOpen className="w-3.5 h-3.5" />
         <span>语法速查手册</span>
+      </button>
+      <button
+        onClick={onOpenPresets}
+        className="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 border border-slate-700 text-xs text-slate-400 hover:text-slate-200 hover:border-indigo-500/40 hover:bg-slate-800 transition-all"
+      >
+        <Layers className="w-3.5 h-3.5" />
+        <span>蒙版预设</span>
       </button>
       <button
         onClick={onImport}

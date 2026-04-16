@@ -10,11 +10,13 @@ import CanvasArea from './components/CanvasArea';
 import OutputPanel from './components/OutputPanel';
 import SyntaxCheatSheet from './components/SyntaxCheatSheet';
 import ImportDialog from './components/ImportDialog';
+import PresetsDialog from './components/PresetsDialog';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
   const [cheatSheetOpen, setCheatSheetOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [presetsDialogOpen, setPresetsDialogOpen] = useState(false);
 
   const updateCanvas = useCallback((updates: Partial<CanvasSettings>) => {
     setState(prev => ({
@@ -75,13 +77,22 @@ const App: React.FC = () => {
     setState({ canvas, regions, selectedRegionId: regions.length > 0 ? regions[0].id : null });
   }, []);
 
+  const handleApplyPreset = useCallback((canvasUpdates: Partial<CanvasSettings>, regions: Region[]) => {
+    setState(prev => ({
+      ...prev,
+      canvas: { ...prev.canvas, ...canvasUpdates },
+      regions,
+      selectedRegionId: regions.length > 0 ? regions[0].id : null,
+    }));
+  }, []);
+
   const generatedPrompt = useMemo(() => {
     return generatePromptString(state.canvas, state.regions);
   }, [state.canvas, state.regions]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-slate-950 font-sans text-slate-200">
-      <Header onOpenCheatSheet={() => setCheatSheetOpen(true)} onImport={() => setImportDialogOpen(true)} />
+      <Header onOpenCheatSheet={() => setCheatSheetOpen(true)} onImport={() => setImportDialogOpen(true)} onOpenPresets={() => setPresetsDialogOpen(true)} />
       
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -120,6 +131,13 @@ const App: React.FC = () => {
         open={importDialogOpen}
         onClose={() => setImportDialogOpen(false)}
         onImport={handleImport}
+      />
+
+      <PresetsDialog
+        open={presetsDialogOpen}
+        onClose={() => setPresetsDialogOpen(false)}
+        onApply={handleApplyPreset}
+        canvas={state.canvas}
       />
 
       <style dangerouslySetInnerHTML={{ __html: `
