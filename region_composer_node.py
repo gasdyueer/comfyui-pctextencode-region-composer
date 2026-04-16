@@ -107,7 +107,7 @@ class PCTextEncode_RegionComposer:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("prompt",)
     FUNCTION = "generate"
-    CATEGORY = "prompt_control/region"
+    CATEGORY = "Gasdyueer/region"
     DESCRIPTION = "Open the visual editor, paste the exported JSON, output Prompt Control syntax"
 
     def generate(self, regions_json):
