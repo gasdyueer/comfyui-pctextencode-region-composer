@@ -18,7 +18,7 @@ git clone https://github.com/xxx/comfyui-pctextencode-region-composer.git
 
 ## 使用方法
 
-1. 在 ComfyUI 中右键添加节点 → `prompt_control/region` → **PC Region Composer**
+1. 在 ComfyUI 中右键添加节点 → `Gasdyueer/region` → **PC Region Composer**
 2. 点击节点内的 **Open Region Editor** 按钮，打开可视化编辑器
 3. 在编辑器中拖拽创建区域、填写提示词、配置参数
 4. 在编辑器底部复制生成的 JSON
