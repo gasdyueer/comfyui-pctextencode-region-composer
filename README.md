@@ -1,5 +1,5 @@
 
-![ComfyUI PC Region Composer](docs\images\image.png)
+![ComfyUI PC Region Composer](./docs/images/image.png)
 
 # ComfyUI PC Region Composer
 
