@@ -11,7 +11,7 @@
 
 ```bash
 cd ComfyUI/custom_nodes/
-git clone https://github.com/xxx/comfyui-pctextencode-region-composer.git
+git clone https://github.com/gasdyueer/comfyui-pctextencode-region-composer.git
 ```
 
 重启 ComfyUI 即可。
