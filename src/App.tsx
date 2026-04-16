@@ -9,10 +9,12 @@ import RegionPanel from './components/RegionPanel';
 import CanvasArea from './components/CanvasArea';
 import OutputPanel from './components/OutputPanel';
 import SyntaxCheatSheet from './components/SyntaxCheatSheet';
+import ImportDialog from './components/ImportDialog';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
   const [cheatSheetOpen, setCheatSheetOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const updateCanvas = useCallback((updates: Partial<CanvasSettings>) => {
     setState(prev => ({
@@ -69,13 +71,17 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, selectedRegionId: id }));
   }, []);
 
+  const handleImport = useCallback((canvas: CanvasSettings, regions: Region[]) => {
+    setState({ canvas, regions, selectedRegionId: regions.length > 0 ? regions[0].id : null });
+  }, []);
+
   const generatedPrompt = useMemo(() => {
     return generatePromptString(state.canvas, state.regions);
   }, [state.canvas, state.regions]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-slate-950 font-sans text-slate-200">
-      <Header onOpenCheatSheet={() => setCheatSheetOpen(true)} />
+      <Header onOpenCheatSheet={() => setCheatSheetOpen(true)} onImport={() => setImportDialogOpen(true)} />
       
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -108,6 +114,12 @@ const App: React.FC = () => {
       <SyntaxCheatSheet
         open={cheatSheetOpen}
         onClose={() => setCheatSheetOpen(false)}
+      />
+
+      <ImportDialog
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        onImport={handleImport}
       />
 
       <style dangerouslySetInnerHTML={{ __html: `

@@ -76,6 +76,7 @@ PC Region Composer ──prompt──▶ PC: Schedule prompt
 - **羽化（Feather）**：四边独立像素值
 - **遮罩合成操作**：multiply / add / subtract / intersect
 - **一键复制**：快速复制生成的提示词或 JSON 配置
+- **导入恢复**：粘贴提示词字符串或 JSON 即可恢复编辑状态，继续编辑
 
 ## 项目结构
 
@@ -92,7 +93,7 @@ PC Region Composer ──prompt──▶ PC: Schedule prompt
 │   ├── constants.ts         # 常量与初始状态
 │   ├── types.ts             # TypeScript 类型定义
 │   ├── components/          # React 组件
-│   └── utils/               # 工具函数（含 promptGenerator.ts）
+│   └── utils/               # 工具函数（含 promptGenerator.ts、promptParser.ts）
 ├── docs/                    # 文档
 │   ├── 01-快速入门.md
 │   ├── 02-节点详解.md
@@ -129,6 +130,9 @@ npm run build        # 构建到 web/editor/
 
 **Q: MASK 和 AREA 有什么区别？**
 `MASK` 全尺寸计算后应用遮罩，区域间可能有轻微渗透；`AREA` 分区域独立计算后合成，区域完全独立。
+
+**Q: 如何从已有的提示词恢复编辑状态？**
+点击编辑器顶部的"导入"按钮，粘贴之前生成的 Prompt Control 提示词字符串或导出的 JSON，即可恢复所有区域配置并继续编辑。
 
 ## 许可证
 
