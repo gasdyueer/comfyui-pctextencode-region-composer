@@ -41,6 +41,7 @@ export interface CanvasSettings {
   mode: OutputMode;
   format: CoordFormat;
   basePrompt: string;
+  suffixPrompt: string;
   useFill: boolean;
   maskWidth: number;
   maskHeight: number;

@@ -19,6 +19,7 @@ export const INITIAL_STATE: AppState = {
     mode: OutputMode.AND,
     format: CoordFormat.PERCENTAGE,
     basePrompt: '',
+    suffixPrompt: '',
     useFill: true,
     maskWidth: 512,
     maskHeight: 512,

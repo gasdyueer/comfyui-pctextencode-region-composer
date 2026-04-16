@@ -20,7 +20,8 @@ const styleStr = (style: WeightStyle, normalization: string[]): string => {
 };
 
 export function generatePromptString(canvas: CanvasSettings, regions: Region[]): string {
-  const { width: W, height: H, mode, format, basePrompt, useFill, maskWidth, maskHeight, maskWeight, style, normalization } = canvas;
+  const { width: W, height: H, mode, format, basePrompt, suffixPrompt, useFill, maskWidth, maskHeight, maskWeight, style, normalization } = canvas;
+  const suffix = suffixPrompt.trim();
 
   const formatCoords = (x: number, y: number, w: number, h: number) => {
     let x1 = x;
@@ -57,7 +58,8 @@ export function generatePromptString(canvas: CanvasSettings, regions: Region[]):
       const coords = formatCoords(r.x, r.y, r.width, r.height);
       const f = featherStr(r.feather);
       const op = maskOpStr(r.op);
-      const regionStr = `${r.prompt.trim()} ${r.type}(${coords}, ${r.weight.toFixed(1)}${op}) ${f}`.trim();
+      const regionPrompt = suffix ? `${r.prompt.trim()} ${suffix}`.trim() : r.prompt.trim();
+      const regionStr = `${regionPrompt} ${r.type}(${coords}, ${r.weight.toFixed(1)}${op}) ${f}`.trim();
 
       if (output.length > 0) {
         output += ` AND ${regionStr}`;
@@ -90,7 +92,8 @@ export function generatePromptString(canvas: CanvasSettings, regions: Region[]):
         maskPart = `(${coords})`;
       }
 
-      const regionStr = `COUPLE${maskPart} ${r.prompt.trim()} ${f}`.trim();
+      const regionPrompt = suffix ? `${r.prompt.trim()} ${suffix}`.trim() : r.prompt.trim();
+      const regionStr = `COUPLE${maskPart} ${regionPrompt} ${f}`.trim();
 
       if (output.length > 0) {
         output += ` ${regionStr}`;
