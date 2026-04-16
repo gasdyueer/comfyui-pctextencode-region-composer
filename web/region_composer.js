@@ -15,8 +15,9 @@ app.registerExtension({
             btn.title = "Open the visual region editor in a new tab";
             btn.style.cssText = "width:100%;padding:6px;cursor:pointer;border:1px solid #555;border-radius:4px;background:#2a2a3e;color:#ddd;font-size:12px;margin-top:4px;";
             btn.addEventListener("click", () => {
-                // Try local extension path first, fallback to online version
-                const base = import.meta.url.replace(/\/web\/.*$/, "");
+                const jsUrl = new URL(import.meta.url, location.href);
+                // jsUrl = .../extensions/comfyui-pctextencode-region-composer/web/region_composer.js
+                const base = jsUrl.pathname.replace(/\/web\/.*$/, "");
                 const url = `${base}/web/editor/index.html`;
                 window.open(url, "_blank");
             });
