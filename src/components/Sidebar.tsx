@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { CanvasSettings, OutputMode, CoordFormat, WeightStyle } from '../types';
 import { Settings, Maximize2, X, Zap } from 'lucide-react';
 import { AVAILABLE_STYLES, AVAILABLE_NORMALIZATIONS } from '../constants';
-import SyntaxTooltip from './SyntaxTooltip';
+
 
 const QUICK_INSERTS = [
   { label: 'BREAK', tip: '分块编码', cls: 'text-amber-400/70 hover:bg-amber-500/20 hover:text-amber-300' },
@@ -161,9 +161,8 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
           <div>
-            <label className="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
+            <label className="block text-xs text-slate-500 mb-1">
               基础提示词
-              <SyntaxTooltip />
             </label>
             <textarea
               value={canvas.basePrompt}
@@ -177,9 +176,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           {/* Suffix Prompt */}
           <div className="pt-2 border-t border-slate-800">
             <div className="flex items-center justify-between mb-1.5">
-              <label className="flex items-center gap-1.5 text-xs text-slate-500">
+              <label className="text-xs text-slate-500">
                 区域后缀提示词
-                <SyntaxTooltip />
               </label>
               <button
                 onClick={openSuffixEditor}
