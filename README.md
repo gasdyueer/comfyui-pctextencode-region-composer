@@ -1,6 +1,9 @@
+
+![ComfyUI PC Region Composer](docs\images\image.png)
+
 # ComfyUI PC Region Composer
 
-一个 ComfyUI 自定义节点，集成可视化区域提示词编辑器，帮助用户通过图形化界面快速生成符合 [ComfyUI Prompt Control](https://github.com/asagi4/comfyui-prompt-control) 语法的区域提示词。
+一个 ComfyUI 自定义节点，提供可视化区域提示词编辑器入口。点击节点按钮即可打开编辑器，通过图形化界面生成符合 [ComfyUI Prompt Control](https://github.com/asagi4/comfyui-prompt-control) 语法的区域提示词。
 
 ![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
@@ -21,48 +24,11 @@ git clone https://github.com/gasdyueer/comfyui-pctextencode-region-composer.git
 1. 在 ComfyUI 中右键添加节点 → `Gasdyueer/region` → **PC Region Composer**
 2. 点击节点内的 **Open Region Editor** 按钮，打开可视化编辑器
 3. 在编辑器中拖拽创建区域、填写提示词、配置参数
-4. 在编辑器底部复制生成的 JSON
-5. 粘贴到节点的 `regions_json` 输入框
-6. 节点输出 Prompt Control 语法字符串 → 连接到 `PC: Schedule prompt`
+4. 复制编辑器生成的 Prompt Control 语法字符串
+5. 粘贴到 `PC: Schedule prompt` 节点使用
 
 ```
-PC Region Composer ──prompt──▶ PC: Schedule prompt
-```
-
-### regions_json 格式
-
-支持两种格式：
-
-**完整格式**（从编辑器导出）：
-```json
-{
-  "canvas": {
-    "width": 1024, "height": 1024,
-    "mode": "AND", "format": "PERCENTAGE",
-    "basePrompt": "a landscape",
-    "style": "comfy", "normalization": ["none"],
-    "maskWidth": 512, "maskHeight": 512, "maskWeight": 1.0,
-    "useFill": true
-  },
-  "regions": [
-    {
-      "x": 0, "y": 0, "width": 512, "height": 512,
-      "prompt": "a red sun", "type": "MASK", "weight": 1.0,
-      "op": "multiply", "feather": {"left": 0, "top": 0, "right": 0, "bottom": 0}
-    }
-  ]
-}
-```
-
-**简写格式**（仅区域数组）：
-```json
-[
-  {
-    "x": 0, "y": 0, "width": 512, "height": 512,
-    "prompt": "a red sun", "type": "MASK", "weight": 1.0,
-    "op": "multiply", "feather": {"left": 0, "top": 0, "right": 0, "bottom": 0}
-  }
-]
+PC Region Composer → 复制提示词 → PC: Schedule prompt
 ```
 
 ## 可视化编辑器
@@ -82,7 +48,7 @@ PC Region Composer ──prompt──▶ PC: Schedule prompt
 
 ```
 ├── __init__.py              # 节点注册 + WEB_DIRECTORY
-├── region_composer_node.py  # Python 节点：JSON → Prompt Control 语法
+├── region_composer_node.py  # Python 节点：编辑器入口按钮
 ├── web/
 │   ├── region_composer.js   # ComfyUI 前端扩展（Open Editor 按钮）
 │   └── editor/              # vite build 产物（可视化编辑器）
