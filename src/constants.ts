@@ -207,4 +207,5 @@ export const QUICK_INSERTS = [
   { label: '[ : :0.5]', tip: '调度切换', cls: 'text-blue-400/70 hover:bg-blue-500/20 hover:text-blue-300' },
   { label: '[ | :0.1]', tip: '交替切换', cls: 'text-teal-400/70 hover:bg-teal-500/20 hover:text-teal-300' },
   { label: 'NOISE(0.1)', tip: '添加噪声', cls: 'text-rose-400/70 hover:bg-rose-500/20 hover:text-rose-300' },
+  { label: '[CUT:text:target]', tip: 'Cutoff 隔离', cls: 'text-orange-400/70 hover:bg-orange-500/20 hover:text-orange-300' },
 ];
