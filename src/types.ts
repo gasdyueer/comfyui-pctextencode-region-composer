@@ -35,6 +35,12 @@ export enum WeightStyle {
   DOWN_WEIGHT = 'down_weight',
 }
 
+export const ScheduleMode = {
+  NONE: 'NONE',
+  SCHEDULE: 'SCHEDULE',
+} as const;
+export type ScheduleMode = typeof ScheduleMode[keyof typeof ScheduleMode];
+
 export interface CanvasSettings {
   width: number;
   height: number;
@@ -77,6 +83,10 @@ export interface Region {
   imaskWeight: number;
   /** COUPLE 模式下 IMASK 的合成操作 */
   imaskOp: MaskOp;
+  /** 调度模式下该区域的起始百分比 (0.0~1.0) */
+  scheduleStart: number;
+  /** 调度模式下该区域的结束百分比 (0.0~1.0) */
+  scheduleEnd: number;
 }
 
 export interface AppState {

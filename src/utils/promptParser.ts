@@ -1,6 +1,6 @@
 import {
   CanvasSettings, Region, OutputMode, CoordFormat,
-  RegionType, MaskOp, WeightStyle, CoupleMaskType,
+  RegionType, MaskOp, WeightStyle, CoupleMaskType, ScheduleMode,
 } from '../types';
 import { INITIAL_STATE, COLORS } from '../constants';
 
@@ -88,6 +88,8 @@ export function parseJsonInput(input: string): { canvas: CanvasSettings; regions
       imaskIndex: Number(src.imaskIndex ?? 0),
       imaskWeight: Number(src.imaskWeight ?? 1.0),
       imaskOp: (Object.values(MaskOp).includes(src.imaskOp as MaskOp) ? src.imaskOp : MaskOp.MULTIPLY) as MaskOp,
+      scheduleStart: Number(src.scheduleStart ?? 0),
+      scheduleEnd: Number(src.scheduleEnd ?? 1),
     };
   });
 
@@ -110,6 +112,9 @@ interface ParsedRegion {
   imaskIndex: number;
   imaskWeight: number;
   imaskOp: MaskOp;
+  // Schedule
+  scheduleStart: number;
+  scheduleEnd: number;
 }
 
 export function parsePromptString(input: string): { canvas: CanvasSettings; regions: Region[] } | null {
@@ -133,6 +138,12 @@ export function parsePromptString(input: string): { canvas: CanvasSettings; regi
       canvas.normalization = ['none'];
     }
     text = text.replace(styleRe, ' ');
+  }
+
+  // 2. Detect scheduling syntax: text starts with [ after trimming STYLE prefix
+  const trimmed = text.trim();
+  if (trimmed.startsWith('[')) {
+    return parseScheduledMode(trimmed, canvas);
   }
 
   // Detect mode: presence of COUPLE keyword (but not inside FEATHER etc.)
@@ -194,6 +205,7 @@ function parseAndMode(text: string, canvas: CanvasSettings): { canvas: CanvasSet
         feather: { left: 0, top: 0, right: 0, bottom: 0 },
         coupleMaskType: CoupleMaskType.MASK,
         imaskIndex: 0, imaskWeight: 1.0, imaskOp: MaskOp.MULTIPLY,
+        scheduleStart: 0, scheduleEnd: 1,
       },
     });
   }
@@ -299,6 +311,7 @@ function parseAndMode(text: string, canvas: CanvasSettings): { canvas: CanvasSet
       color: assignColor(idx),
       coupleMaskType: CoupleMaskType.MASK,
       imaskIndex: 0, imaskWeight: 1.0, imaskOp: MaskOp.MULTIPLY,
+      scheduleStart: 0, scheduleEnd: 1,
     };
   });
 
@@ -343,6 +356,7 @@ function parseCoupleMode(text: string, canvas: CanvasSettings): { canvas: Canvas
           feather: { left: 0, top: 0, right: 0, bottom: 0 },
           coupleMaskType: CoupleMaskType.MASK,
           imaskIndex: 0, imaskWeight: 1.0, imaskOp: MaskOp.MULTIPLY,
+          scheduleStart: 0, scheduleEnd: 1,
         },
       });
     } else {
@@ -363,6 +377,7 @@ function parseCoupleMode(text: string, canvas: CanvasSettings): { canvas: Canvas
           feather: { left: 0, top: 0, right: 0, bottom: 0 },
           coupleMaskType: CoupleMaskType.IMASK,
           imaskIndex, imaskWeight, imaskOp,
+          scheduleStart: 0, scheduleEnd: 1,
         },
       });
     }
@@ -458,8 +473,180 @@ function parseCoupleMode(text: string, canvas: CanvasSettings): { canvas: Canvas
       imaskIndex: p.imaskIndex,
       imaskWeight: p.imaskWeight,
       imaskOp: p.imaskOp,
+      scheduleStart: p.scheduleStart,
+      scheduleEnd: p.scheduleEnd,
     };
   });
 
   return { canvas, regions };
+}
+
+// ---------------------------------------------------------------------------
+// Scheduled mode parser — bracket-aware nesting [before:after:X]
+// ---------------------------------------------------------------------------
+
+/**
+ * Bracket-aware split: splits `text` by `:` at depth 0 only.
+ * Returns array of segments and the closing bracket index (or -1 if not found).
+ */
+function splitAtTopLevel(text: string): { segments: string[]; closingIdx: number } | null {
+  let depth = 0;
+  let start = 0;
+  const segments: string[] = [];
+  let closingIdx = -1;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '\\' && i + 1 < text.length) {
+      i++; // skip escaped char
+      continue;
+    }
+    if (ch === '[') {
+      depth++;
+    } else if (ch === ']') {
+      depth--;
+      if (depth < 0) {
+        closingIdx = i;
+        break;
+      }
+    } else if (ch === ':' && depth === 0) {
+      segments.push(text.substring(start, i));
+      start = i + 1;
+    }
+  }
+
+  if (closingIdx === -1) return null;
+  segments.push(text.substring(start, closingIdx));
+  return { segments, closingIdx };
+}
+
+interface ScheduleSegment {
+  content: string;
+  /** Start of this segment (0 for first) */
+  start: number;
+  /** End of this segment (= next segment's start, or 1 for last) */
+  end: number;
+}
+
+/**
+ * Recursively parse nested scheduling brackets into flat segments with time ranges.
+ */
+function flattenScheduleSegments(text: string): ScheduleSegment[] | null {
+  const textTrimmed = text.trim();
+  if (!textTrimmed.startsWith('[')) return null;
+
+  // Strip leading [
+  const inner = textTrimmed.substring(1);
+  const result = splitAtTopLevel(inner);
+  if (!result) return null;
+
+  const { segments, closingIdx } = result;
+  // We expect at least 2 segments: content, ..., switchPoint
+  // Valid forms: [before:after:X], [before:during:after:X], [before::X]
+  // In our generator we always produce [before:after:X] (2 segments + switchPoint = 3 parts)
+  // But we should handle general cases
+
+  if (segments.length < 2) return null;
+
+  // The last segment should be a numeric value (switch point)
+  const switchPoint = parseFloat(segments[segments.length - 1].trim());
+  if (isNaN(switchPoint)) return null;
+
+  const beforeContent = segments.slice(0, segments.length - 1).join(':');
+  const afterRest = textTrimmed.substring(closingIdx + 1).trim();
+
+  // "before" part
+  const beforeSegments: ScheduleSegment[] = [];
+  if (beforeContent.trim()) {
+    const nested = flattenScheduleSegments(beforeContent.trim());
+    if (nested) {
+      beforeSegments.push(...nested);
+    } else {
+      beforeSegments.push({ content: beforeContent.trim(), start: 0, end: switchPoint });
+    }
+  }
+
+  // "after" part — may be nested scheduling or plain content
+  const afterSegments: ScheduleSegment[] = [];
+  if (afterRest) {
+    const nested = flattenScheduleSegments(afterRest);
+    if (nested) {
+      afterSegments.push(...nested);
+    } else {
+      afterSegments.push({ content: afterRest, start: switchPoint, end: 1 });
+    }
+  }
+
+  // Normalize: before segments end at switchPoint, after segments start at switchPoint
+  const allSegments = [...beforeSegments, ...afterSegments];
+  if (allSegments.length === 0) return null;
+
+  // Fix boundary: first segment starts at 0, last ends at 1
+  allSegments[0].start = 0;
+  allSegments[allSegments.length - 1].end = 1;
+
+  // Ensure continuity
+  for (let i = 1; i < allSegments.length; i++) {
+    allSegments[i].start = allSegments[i - 1].end;
+  }
+
+  return allSegments;
+}
+
+function parseScheduledMode(text: string, canvas: CanvasSettings): { canvas: CanvasSettings; regions: Region[] } | null {
+  canvas.scheduleMode = 'SCHEDULE';
+
+  const segments = flattenScheduleSegments(text);
+  if (!segments || segments.length === 0) return null;
+
+  const allRegions: Region[] = [];
+
+  for (const seg of segments) {
+    if (!seg.content.trim()) continue;
+
+    // Determine mode for this segment
+    const hasCouple = /\bCOUPLE\b/i.test(seg.content);
+    const mode = hasCouple ? OutputMode.COUPLE : OutputMode.AND;
+
+    // Create a sub-canvas for this segment's parsing
+    const subCanvas = defaultCanvas();
+    subCanvas.mode = mode;
+
+    let parsed;
+    if (mode === OutputMode.AND) {
+      parsed = parseAndMode(seg.content, subCanvas);
+    } else {
+      parsed = parseCoupleMode(seg.content, subCanvas);
+    }
+
+    if (parsed && parsed.regions.length > 0) {
+      // Apply schedule range to each region in this segment
+      const schedRegions = parsed.regions.map(r => ({
+        ...r,
+        scheduleStart: seg.start,
+        scheduleEnd: seg.end,
+      }));
+      allRegions.push(...schedRegions);
+
+      // Merge basePrompt from first successful segment
+      if (allRegions.length === schedRegions.length) {
+        canvas.basePrompt = parsed.canvas.basePrompt || canvas.basePrompt;
+        canvas.mode = mode;
+        canvas.format = parsed.canvas.format;
+        canvas.useFill = parsed.canvas.useFill;
+        canvas.maskWidth = parsed.canvas.maskWidth;
+        canvas.maskHeight = parsed.canvas.maskHeight;
+        canvas.maskWeight = parsed.canvas.maskWeight;
+      }
+    }
+  }
+
+  if (allRegions.length === 0) return null;
+
+  // Reassign colors after merging
+  allRegions.forEach((r, i) => {
+    r.color = assignColor(i);
+  });
+
+  return { canvas, regions: allRegions };
 }

@@ -45,6 +45,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         imaskIndex: 0,
         imaskWeight: 1.0,
         imaskOp: MaskOp.MULTIPLY,
+        scheduleStart: 0,
+        scheduleEnd: 1,
       };
       return {
         ...state,

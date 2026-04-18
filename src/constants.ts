@@ -1,5 +1,5 @@
 
-import { AppState, OutputMode, CoordFormat, RegionType, MaskOp, WeightStyle, CoupleMaskType, Region } from './types';
+import { AppState, OutputMode, CoordFormat, RegionType, MaskOp, WeightStyle, CoupleMaskType, ScheduleMode, Region } from './types';
 
 export const APP_VERSION = '2.0.0';
 
@@ -146,6 +146,8 @@ export function presetToRegions(preset: RegionPreset, canvasW: number, canvasH: 
     imaskIndex: 0,
     imaskWeight: 1.0,
     imaskOp: MaskOp.MULTIPLY,
+    scheduleStart: 0,
+    scheduleEnd: 1,
   }));
 }
 
@@ -174,6 +176,7 @@ export const INITIAL_STATE: AppState = {
     maskWeight: 1.0,
     style: WeightStyle.COMFY,
     normalization: ['none'],
+    scheduleMode: 'NONE',
   },
   regions: [],
   selectedRegionId: null,

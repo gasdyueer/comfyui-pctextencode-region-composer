@@ -4,7 +4,7 @@
 
 
 import React, { useState, useRef, useEffect } from 'react';
-import { CanvasSettings, OutputMode, CoordFormat, WeightStyle } from '../types';
+import { CanvasSettings, OutputMode, CoordFormat, WeightStyle, ScheduleMode } from '../types';
 import { Settings, Maximize2, X, Zap } from 'lucide-react';
 import { AVAILABLE_STYLES, AVAILABLE_NORMALIZATIONS, QUICK_INSERTS } from '../constants';
 import Modal from './Modal';
@@ -106,6 +106,22 @@ const Sidebar: React.FC<SidebarProps> = ({
               <option value={OutputMode.AND}>标准 (AND)</option>
               <option value={OutputMode.COUPLE}>注意力耦合</option>
             </select>
+          </div>
+          <div>
+            <label className="block text-xs text-slate-500 mb-1">调度模式</label>
+            <select
+              value={canvas.scheduleMode}
+              onChange={(e) => onUpdateCanvas({ scheduleMode: e.target.value as ScheduleMode })}
+              className={inputCls}
+            >
+              <option value="NONE">无调度</option>
+              <option value="SCHEDULE">调度</option>
+            </select>
+            {canvas.scheduleMode === 'SCHEDULE' && (
+              <p className="text-[10px] text-slate-600 leading-relaxed mt-1">
+                为每个区域设置时间区间（采样进度百分比），不同区间的提示词将按调度语法嵌套输出。
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-xs text-slate-500 mb-1">坐标格式</label>

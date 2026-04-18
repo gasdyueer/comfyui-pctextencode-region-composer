@@ -335,6 +335,82 @@ const RegionPanel: React.FC<RegionPanelProps> = ({
               )}
             </div>
 
+            {/* Schedule Range (visible when scheduling mode) */}
+            {canvas.scheduleMode === 'SCHEDULE' && (
+              <div className="space-y-4 pt-2 border-t border-slate-800">
+                <div className="flex items-center gap-2 text-xs text-slate-500 uppercase font-bold tracking-wider">
+                  <span>调度区间</span>
+                  <span className="text-slate-600 font-normal normal-case">
+                    {selectedRegion.scheduleStart.toFixed(2)} ~ {selectedRegion.scheduleEnd.toFixed(2)}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] text-slate-500 uppercase font-bold tracking-tight">起始 %</label>
+                    <input
+                      type="number"
+                      step="0.05"
+                      min="0"
+                      max="1"
+                      value={selectedRegion.scheduleStart}
+                      onChange={(e) => {
+                        let v = parseFloat(e.target.value);
+                        if (isNaN(v)) v = 0;
+                        v = Math.max(0, Math.min(1, v));
+                        onUpdateRegion(selectedRegion.id, { scheduleStart: v });
+                      }}
+                      className="w-16 bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-xs text-center focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={selectedRegion.scheduleStart}
+                    onChange={(e) => {
+                      let v = parseFloat(e.target.value);
+                      if (v >= selectedRegion.scheduleEnd) v = Math.max(0, selectedRegion.scheduleEnd - 0.05);
+                      onUpdateRegion(selectedRegion.id, { scheduleStart: v });
+                    }}
+                    className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] text-slate-500 uppercase font-bold tracking-tight">结束 %</label>
+                    <input
+                      type="number"
+                      step="0.05"
+                      min="0"
+                      max="1"
+                      value={selectedRegion.scheduleEnd}
+                      onChange={(e) => {
+                        let v = parseFloat(e.target.value);
+                        if (isNaN(v)) v = 1;
+                        v = Math.max(0, Math.min(1, v));
+                        onUpdateRegion(selectedRegion.id, { scheduleEnd: v });
+                      }}
+                      className="w-16 bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-xs text-center focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={selectedRegion.scheduleEnd}
+                    onChange={(e) => {
+                      let v = parseFloat(e.target.value);
+                      if (v <= selectedRegion.scheduleStart) v = Math.min(1, selectedRegion.scheduleStart + 0.05);
+                      onUpdateRegion(selectedRegion.id, { scheduleEnd: v });
+                    }}
+                    className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Coordinate Sliders */}
             <div className="space-y-4 pt-2 border-t border-slate-800">
               <div className="space-y-1">
