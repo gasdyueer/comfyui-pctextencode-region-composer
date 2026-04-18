@@ -1,100 +1,36 @@
-
 import React, { useState, useEffect } from 'react';
 import { RegionPreset, PRESETS, COLORS, presetToRegions } from '../constants';
 import { OutputMode, CoordFormat, Region, CanvasSettings } from '../types';
-import { X, Layers } from 'lucide-react';
+import { Layers } from 'lucide-react';
+import Modal from './Modal';
 
 interface PresetsDialogProps {
   open: boolean;
   onClose: () => void;
   onApply: (canvas: Partial<CanvasSettings>, regions: Region[]) => void;
   canvas: CanvasSettings;
+  hasExistingRegions?: boolean;
 }
 
-const PresetsDialog: React.FC<PresetsDialogProps> = ({ open, onClose, onApply, canvas }) => {
+const PresetsDialog: React.FC<PresetsDialogProps> = ({ open, onClose, onApply, canvas, hasExistingRegions }) => {
   const [filter, setFilter] = useState<OutputMode | null>(null);
 
   useEffect(() => {
     if (open) setFilter(null);
   }, [open]);
 
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && open) onClose();
-    };
-    if (open) {
-      document.addEventListener('keydown', handleKey);
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.removeEventListener('keydown', handleKey);
-      document.body.style.overflow = '';
-    };
-  }, [open, onClose]);
-
-  if (!open) return null;
-
   const filtered = filter ? PRESETS.filter(p => p.mode === filter) : PRESETS;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-[680px] max-h-[80vh] bg-slate-900 border border-slate-700 rounded-xl shadow-2xl shadow-black/60 flex flex-col overflow-hidden animate-in fade-in">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-indigo-400" />
-            <h3 className="text-sm font-bold text-slate-200">蒙版预设</h3>
-            <span className="text-xs text-slate-600">选择常用区域布局快速开始</span>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-slate-800 rounded text-slate-500 hover:text-slate-300 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Category tabs */}
-        <div className="px-5 pt-3 flex gap-2">
-          {[
-            { label: `全部 (${PRESETS.length})`, value: null },
-            { label: 'COUPLE', value: OutputMode.COUPLE },
-            { label: 'AND', value: OutputMode.AND },
-          ].map(tab => (
-            <button
-              key={String(tab.value)}
-              onClick={() => setFilter(tab.value as OutputMode | null)}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                filter === tab.value
-                  ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/40'
-                  : 'bg-slate-800 text-slate-500 border border-slate-700 hover:text-slate-300'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Preset cards grid */}
-        <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
-          <div className="grid grid-cols-3 gap-3">
-            {filtered.map(preset => (
-              <PresetCard
-                key={preset.id}
-                preset={preset}
-                onClick={() => {
-                  const regions = presetToRegions(preset, canvas.width, canvas.height);
-                  onApply({ mode: preset.mode, format: CoordFormat.PERCENTAGE, useFill: preset.useFill }, regions);
-                  onClose();
-                }}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-4 py-2.5 border-t border-slate-800 flex items-center justify-between">
+    <Modal
+      open={open}
+      onClose={onClose}
+      width="w-[680px]"
+      icon={<Layers className="w-4 h-4 text-indigo-400" />}
+      title="蒙版预设"
+      subtitle="选择常用区域布局快速开始"
+      footer={
+        <div className="flex items-center justify-between">
           <span className="text-xs text-slate-600">
             共 {PRESETS.length} 个预设，当前显示 {filtered.length} 个
           </span>
@@ -102,8 +38,47 @@ const PresetsDialog: React.FC<PresetsDialogProps> = ({ open, onClose, onApply, c
             按 <kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 font-mono">Esc</kbd> 关闭
           </span>
         </div>
+      }
+    >
+      {/* Category tabs */}
+      <div className="px-5 pt-3 flex gap-2">
+        {[
+          { label: `全部 (${PRESETS.length})`, value: null },
+          { label: 'COUPLE', value: OutputMode.COUPLE },
+          { label: 'AND', value: OutputMode.AND },
+        ].map(tab => (
+          <button
+            key={String(tab.value)}
+            onClick={() => setFilter(tab.value as OutputMode | null)}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+              filter === tab.value
+                ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/40'
+                : 'bg-slate-800 text-slate-500 border border-slate-700 hover:text-slate-300'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
-    </div>
+
+      {/* Preset cards grid */}
+      <div className="p-5">
+        <div className="grid grid-cols-3 gap-3">
+          {filtered.map(preset => (
+            <PresetCard
+              key={preset.id}
+              preset={preset}
+              onClick={() => {
+                if (hasExistingRegions && !confirm('应用预设将覆盖当前所有区域，是否继续？')) return;
+                const regions = presetToRegions(preset, canvas.width, canvas.height);
+                onApply({ mode: preset.mode, format: CoordFormat.PERCENTAGE, useFill: preset.useFill }, regions);
+                onClose();
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </Modal>
   );
 };
 

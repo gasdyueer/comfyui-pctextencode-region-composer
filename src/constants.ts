@@ -1,6 +1,8 @@
 
 import { AppState, OutputMode, CoordFormat, RegionType, MaskOp, WeightStyle, CoupleMaskType, Region } from './types';
 
+export const APP_VERSION = '2.0.0';
+
 export interface RegionPresetSlot {
   /** 百分比坐标 0.0~1.0 */
   x1: number;
@@ -192,4 +194,17 @@ export const MASK_OPS = [
 export const COUPLE_MASK_TYPES = [
   { value: CoupleMaskType.MASK, label: 'MASK（矩形遮罩）' },
   { value: CoupleMaskType.IMASK, label: 'IMASK（自定义遮罩）' },
+];
+
+export const QUICK_INSERTS = [
+  { label: 'BREAK', tip: '分块编码', cls: 'text-amber-400/70 hover:bg-amber-500/20 hover:text-amber-300' },
+  { label: 'CAT', tip: '拼接编码', cls: 'text-cyan-400/70 hover:bg-cyan-500/20 hover:text-cyan-300' },
+  { label: 'AVG(0.5)', tip: '加权平均', cls: 'text-violet-400/70 hover:bg-violet-500/20 hover:text-violet-300' },
+  { label: '( :1.3)', tip: '权重强调', cls: 'text-pink-400/70 hover:bg-pink-500/20 hover:text-pink-300' },
+  { label: 'SHUFFLE()', tip: '随机排列', cls: 'text-emerald-400/70 hover:bg-emerald-500/20 hover:text-emerald-300' },
+  { label: '<lora: :1>', tip: '加载 LoRA', cls: 'text-purple-400/70 hover:bg-purple-500/20 hover:text-purple-300' },
+  { label: 'DEF(=)', tip: '宏定义', cls: 'text-yellow-400/70 hover:bg-yellow-500/20 hover:text-yellow-300' },
+  { label: '[ : :0.5]', tip: '调度切换', cls: 'text-blue-400/70 hover:bg-blue-500/20 hover:text-blue-300' },
+  { label: '[ | :0.1]', tip: '交替切换', cls: 'text-teal-400/70 hover:bg-teal-500/20 hover:text-teal-300' },
+  { label: 'NOISE(0.1)', tip: '添加噪声', cls: 'text-rose-400/70 hover:bg-rose-500/20 hover:text-rose-300' },
 ];

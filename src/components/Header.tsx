@@ -1,14 +1,16 @@
 
 import React from 'react';
-import { Layout, BookOpen, Upload, Layers } from 'lucide-react';
+import { Layout, BookOpen, Upload, Layers, Wand2 } from 'lucide-react';
+import { APP_VERSION } from '../constants';
 
 interface HeaderProps {
   onOpenCheatSheet: () => void;
   onImport: () => void;
   onOpenPresets: () => void;
+  onOpenGuided: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onOpenCheatSheet, onImport, onOpenPresets }) => {
+const Header: React.FC<HeaderProps> = ({ onOpenCheatSheet, onImport, onOpenPresets, onOpenGuided }) => {
   return (
     <header className="h-14 border-b border-slate-800 bg-slate-900 flex items-center px-6 shrink-0">
       <div className="flex items-center gap-2 text-indigo-400">
@@ -18,8 +20,15 @@ const Header: React.FC<HeaderProps> = ({ onOpenCheatSheet, onImport, onOpenPrese
         </h1>
       </div>
       <button
+        onClick={onOpenGuided}
+        className="ml-4 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-600/20 border border-indigo-500/30 text-xs text-indigo-300 hover:bg-indigo-600/30 hover:border-indigo-500/50 transition-all"
+      >
+        <Wand2 className="w-3.5 h-3.5" />
+        <span>引导创建</span>
+      </button>
+      <button
         onClick={onOpenCheatSheet}
-        className="ml-4 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 border border-slate-700 text-xs text-slate-400 hover:text-slate-200 hover:border-indigo-500/40 hover:bg-slate-800 transition-all"
+        className="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 border border-slate-700 text-xs text-slate-400 hover:text-slate-200 hover:border-indigo-500/40 hover:bg-slate-800 transition-all"
       >
         <BookOpen className="w-3.5 h-3.5" />
         <span>语法速查手册</span>
@@ -39,7 +48,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenCheatSheet, onImport, onOpenPrese
         <span>导入</span>
       </button>
       <div className="ml-auto text-xs text-slate-500 font-mono">
-        v1.0.0
+        v{APP_VERSION}
       </div>
     </header>
   );

@@ -1,7 +1,8 @@
 
-import React, { useState, useMemo, useCallback } from 'react';
-import { INITIAL_STATE, COLORS } from './constants';
-import { AppState, CanvasSettings, Region, RegionType, MaskOp, CoupleMaskType } from './types';
+import React, { useState, useMemo, useEffect } from 'react';
+import { AppState, CanvasSettings, Region } from './types';
+import { useAppState, useAppDispatch, useUndoRedo } from './context/AppContext';
+import { AppAction } from './reducer/appReducer';
 import { generatePromptString } from './utils/promptGenerator';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -11,80 +12,61 @@ import OutputPanel from './components/OutputPanel';
 import SyntaxCheatSheet from './components/SyntaxCheatSheet';
 import ImportDialog from './components/ImportDialog';
 import PresetsDialog from './components/PresetsDialog';
+import GuidedWizard from './components/guided/GuidedWizard';
 
-const App: React.FC = () => {
-  const [state, setState] = useState<AppState>(INITIAL_STATE);
+const AppContent: React.FC = () => {
+  const state = useAppState();
+  const dispatch = useAppDispatch();
+  const { canUndo, canRedo, undo, redo } = useUndoRedo();
+
+  // Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Shift+Z (redo)
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+        e.preventDefault();
+        redo();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [undo, redo]);
+
   const [cheatSheetOpen, setCheatSheetOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [presetsDialogOpen, setPresetsDialogOpen] = useState(false);
+  const [guidedWizardOpen, setGuidedWizardOpen] = useState(false);
 
-  const updateCanvas = useCallback((updates: Partial<CanvasSettings>) => {
-    setState(prev => ({
-      ...prev,
-      canvas: { ...prev.canvas, ...updates },
-    }));
-  }, []);
+  const updateCanvas = (updates: Partial<CanvasSettings>) =>
+    dispatch({ type: 'UPDATE_CANVAS', updates });
 
-  const addRegion = useCallback(() => {
-    const id = Math.random().toString(36).substr(2, 9);
-    const color = COLORS[state.regions.length % COLORS.length];
-    
-    const newRegion: Region = {
-      id,
-      x: state.canvas.width / 2 - 128,
-      y: state.canvas.height / 2 - 128,
-      width: 256,
-      height: 256,
-      prompt: '',
-      type: RegionType.MASK,
-      weight: 1.0,
-      op: MaskOp.MULTIPLY,
-      feather: { left: 0, top: 0, right: 0, bottom: 0 },
-      color,
-      coupleMaskType: CoupleMaskType.MASK,
-      imaskIndex: 0,
-      imaskWeight: 1.0,
-      imaskOp: MaskOp.MULTIPLY,
-    };
+  const addRegion = () =>
+    dispatch({ type: 'ADD_REGION' });
 
-    setState(prev => ({
-      ...prev,
-      regions: [...prev.regions, newRegion],
-      selectedRegionId: id,
-    }));
-  }, [state.regions.length, state.canvas.width, state.canvas.height]);
+  const updateRegion = (id: string, updates: Partial<Region>) =>
+    dispatch({ type: 'UPDATE_REGION', id, updates });
 
-  const updateRegion = useCallback((id: string, updates: Partial<Region>) => {
-    setState(prev => ({
-      ...prev,
-      regions: prev.regions.map(r => (r.id === id ? { ...r, ...updates } : r)),
-    }));
-  }, []);
+  const deleteRegion = (id: string) =>
+    dispatch({ type: 'DELETE_REGION', id });
 
-  const deleteRegion = useCallback((id: string) => {
-    setState(prev => ({
-      ...prev,
-      regions: prev.regions.filter(r => r.id !== id),
-      selectedRegionId: prev.selectedRegionId === id ? null : prev.selectedRegionId,
-    }));
-  }, []);
+  const selectRegion = (id: string | null) =>
+    dispatch({ type: 'SELECT_REGION', id });
 
-  const selectRegion = useCallback((id: string | null) => {
-    setState(prev => ({ ...prev, selectedRegionId: id }));
-  }, []);
+  const handleImport = (canvas: CanvasSettings, regions: Region[]) =>
+    dispatch({ type: 'IMPORT', canvas, regions });
 
-  const handleImport = useCallback((canvas: CanvasSettings, regions: Region[]) => {
-    setState({ canvas, regions, selectedRegionId: regions.length > 0 ? regions[0].id : null });
-  }, []);
+  const handleApplyPreset = (canvasUpdates: Partial<CanvasSettings>, regions: Region[]) =>
+    dispatch({ type: 'APPLY_PRESET', canvasUpdates, regions });
 
-  const handleApplyPreset = useCallback((canvasUpdates: Partial<CanvasSettings>, regions: Region[]) => {
-    setState(prev => ({
-      ...prev,
-      canvas: { ...prev.canvas, ...canvasUpdates },
-      regions,
-      selectedRegionId: regions.length > 0 ? regions[0].id : null,
-    }));
-  }, []);
+  const handleGuidedConfirm = (canvas: CanvasSettings, regions: Region[]) =>
+    dispatch({ type: 'IMPORT', canvas, regions });
 
   const generatedPrompt = useMemo(() => {
     return generatePromptString(state.canvas, state.regions);
@@ -92,7 +74,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-slate-950 font-sans text-slate-200">
-      <Header onOpenCheatSheet={() => setCheatSheetOpen(true)} onImport={() => setImportDialogOpen(true)} onOpenPresets={() => setPresetsDialogOpen(true)} />
+      <Header onOpenCheatSheet={() => setCheatSheetOpen(true)} onImport={() => setImportDialogOpen(true)} onOpenPresets={() => setPresetsDialogOpen(true)} onOpenGuided={() => setGuidedWizardOpen(true)} />
       
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -108,7 +90,7 @@ const App: React.FC = () => {
             onUpdateRegion={updateRegion}
             onSelectRegion={selectRegion}
           />
-          <OutputPanel prompt={generatedPrompt} />
+          <OutputPanel prompt={generatedPrompt} canvas={state.canvas} regions={state.regions} />
         </main>
 
         <RegionPanel
@@ -138,25 +120,20 @@ const App: React.FC = () => {
         onClose={() => setPresetsDialogOpen(false)}
         onApply={handleApplyPreset}
         canvas={state.canvas}
+        hasExistingRegions={state.regions.length > 0}
       />
 
-      <style dangerouslySetInnerHTML={{ __html: `
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #334155;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #475569;
-        }
-      `}} />
+      <GuidedWizard
+        open={guidedWizardOpen}
+        onClose={() => setGuidedWizardOpen(false)}
+        onConfirm={handleGuidedConfirm}
+      />
     </div>
   );
+};
+
+const App: React.FC = () => {
+  return <AppContent />;
 };
 
 export default App;

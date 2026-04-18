@@ -151,10 +151,12 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
                 onSelectRegion(region.id);
               }}
               dragBoundFunc={(pos) => {
-                // Keep inside canvas
-                const newX = Math.max(offset.x, Math.min(pos.x, offset.x + (canvas.width - region.width) * scale));
-                const newY = Math.max(offset.y, Math.min(pos.y, offset.y + (canvas.height - region.height) * scale));
-                return { x: newX, y: newY };
+                // pos is in screen coordinates; convert to canvas coords, constrain, convert back
+                const canvasX = (pos.x - offset.x) / scale;
+                const canvasY = (pos.y - offset.y) / scale;
+                const clampedX = Math.max(0, Math.min(canvasX, canvas.width - region.width));
+                const clampedY = Math.max(0, Math.min(canvasY, canvas.height - region.height));
+                return { x: clampedX * scale + offset.x, y: clampedY * scale + offset.y };
               }}
             >
               <Rect

@@ -1,23 +1,13 @@
 
 
+
+
+
 import React, { useState, useRef, useEffect } from 'react';
 import { CanvasSettings, OutputMode, CoordFormat, WeightStyle } from '../types';
 import { Settings, Maximize2, X, Zap } from 'lucide-react';
-import { AVAILABLE_STYLES, AVAILABLE_NORMALIZATIONS } from '../constants';
-
-
-const QUICK_INSERTS = [
-  { label: 'BREAK', tip: '分块编码', cls: 'text-amber-400/70 hover:bg-amber-500/20 hover:text-amber-300' },
-  { label: 'CAT', tip: '拼接编码', cls: 'text-cyan-400/70 hover:bg-cyan-500/20 hover:text-cyan-300' },
-  { label: 'AVG(0.5)', tip: '加权平均', cls: 'text-violet-400/70 hover:bg-violet-500/20 hover:text-violet-300' },
-  { label: '( :1.3)', tip: '权重强调', cls: 'text-pink-400/70 hover:bg-pink-500/20 hover:text-pink-300' },
-  { label: 'SHUFFLE()', tip: '随机排列', cls: 'text-emerald-400/70 hover:bg-emerald-500/20 hover:text-emerald-300' },
-  { label: '<lora: :1>', tip: '加载 LoRA', cls: 'text-purple-400/70 hover:bg-purple-500/20 hover:text-purple-300' },
-  { label: 'DEF(=)', tip: '宏定义', cls: 'text-yellow-400/70 hover:bg-yellow-500/20 hover:text-yellow-300' },
-  { label: '[ : :0.5]', tip: '调度切换', cls: 'text-blue-400/70 hover:bg-blue-500/20 hover:text-blue-300' },
-  { label: '[ | :0.1]', tip: '交替切换', cls: 'text-teal-400/70 hover:bg-teal-500/20 hover:text-teal-300' },
-  { label: 'NOISE(0.1)', tip: '添加噪声', cls: 'text-rose-400/70 hover:bg-rose-500/20 hover:text-rose-300' },
-];
+import { AVAILABLE_STYLES, AVAILABLE_NORMALIZATIONS, QUICK_INSERTS } from '../constants';
+import Modal from './Modal';
 
 interface SidebarProps {
   canvas: CanvasSettings;
@@ -46,22 +36,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     onUpdateCanvas({ suffixPrompt: suffixEditorText });
     setSuffixEditorOpen(false);
   };
-
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && suffixEditorOpen) {
-        closeSuffixEditor();
-      }
-    };
-    if (suffixEditorOpen) {
-      document.addEventListener('keydown', handleKey);
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.removeEventListener('keydown', handleKey);
-      document.body.style.overflow = '';
-    };
-  }, [suffixEditorOpen, suffixEditorText, canvas.suffixPrompt]);
 
   const insertAtSuffixCursor = (text: string) => {
     const ta = suffixTextareaRef.current;
@@ -281,67 +255,53 @@ const Sidebar: React.FC<SidebarProps> = ({
       </section>
 
       {/* Suffix Prompt Editor Modal */}
-      {suffixEditorOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeSuffixEditor} />
-          <div className="relative w-[620px] max-h-[75vh] bg-slate-900 border border-slate-700 rounded-xl shadow-2xl shadow-black/60 flex flex-col overflow-hidden animate-in fade-in">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-indigo-400" />
-                <h3 className="text-sm font-bold text-slate-200">编辑区域后缀提示词</h3>
-                <span className="text-xs text-slate-600">追加到每个区域末尾</span>
-              </div>
+      <Modal
+        open={suffixEditorOpen}
+        onClose={closeSuffixEditor}
+        icon={<Zap className="w-4 h-4 text-indigo-400" />}
+        title="编辑区域后缀提示词"
+        subtitle="追加到每个区域末尾"
+        footer={
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-600">{suffixEditorText.length} 字符</span>
+            <button
+              onClick={closeSuffixEditor}
+              className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
+            >
+              完成
+            </button>
+          </div>
+        }
+      >
+        <div className="p-5">
+          <textarea
+            ref={suffixTextareaRef}
+            value={suffixEditorText}
+            onChange={(e) => setSuffixEditorText(e.target.value)}
+            placeholder="输入后缀提示词，将自动追加到所有区域的提示词末尾..."
+            className="w-full min-h-[220px] bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-sm text-slate-200 placeholder:text-slate-700 focus:outline-none focus:border-indigo-500/60 resize-none font-mono leading-relaxed custom-scrollbar"
+          />
+        </div>
+
+        <div className="px-5 pb-3">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Zap className="w-3 h-3 text-indigo-400 shrink-0" />
+            <span className="text-[10px] text-slate-600 uppercase font-bold tracking-wider">快捷插入</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_INSERTS.map((qi) => (
               <button
-                onClick={closeSuffixEditor}
-                className="p-1 hover:bg-slate-800 rounded text-slate-500 hover:text-slate-300 transition-colors"
+                key={qi.label}
+                onClick={() => insertAtSuffixCursor(qi.label)}
+                className={`px-2.5 py-1 rounded text-xs font-mono font-medium transition-all border border-transparent ${qi.cls}`}
+                title={qi.tip}
               >
-                <X className="w-4 h-4" />
+                {qi.label}
               </button>
-            </div>
-
-            <div className="flex-1 p-5">
-              <textarea
-                ref={suffixTextareaRef}
-                value={suffixEditorText}
-                onChange={(e) => setSuffixEditorText(e.target.value)}
-                placeholder="输入后缀提示词，将自动追加到所有区域的提示词末尾..."
-                className="w-full h-full min-h-[220px] bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-sm text-slate-200 placeholder:text-slate-700 focus:outline-none focus:border-indigo-500/60 resize-none font-mono leading-relaxed custom-scrollbar"
-              />
-            </div>
-
-            <div className="px-5 pb-2">
-              <div className="flex items-center gap-1.5 mb-2">
-                <Zap className="w-3 h-3 text-indigo-400 shrink-0" />
-                <span className="text-[10px] text-slate-600 uppercase font-bold tracking-wider">快捷插入</span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {QUICK_INSERTS.map((qi) => (
-                  <button
-                    key={qi.label}
-                    onClick={() => insertAtSuffixCursor(qi.label)}
-                    className={`px-2.5 py-1 rounded text-xs font-mono font-medium transition-all border border-transparent ${qi.cls}`}
-                    title={qi.tip}
-                  >
-                    {qi.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between px-5 py-3 border-t border-slate-800">
-              <span className="text-xs text-slate-600">
-                {suffixEditorText.length} 字符
-              </span>
-              <button
-                onClick={closeSuffixEditor}
-                className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
-              >
-                完成
-              </button>
-            </div>
+            ))}
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 };
