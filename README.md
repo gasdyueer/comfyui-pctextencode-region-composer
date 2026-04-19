@@ -5,6 +5,8 @@
 
 一个 ComfyUI 自定义节点，提供可视化区域提示词编辑器入口。点击节点按钮即可打开编辑器，通过图形化界面生成符合 [ComfyUI Prompt Control](https://github.com/asagi4/comfyui-prompt-control) 语法的区域提示词。
 
+**重要说明**：本项目的作用**仅**是辅助生成符合 ComfyUI Prompt Control 语法的提示词。要正确使用本工具，请务必**反复阅读 docs/ 目录中的详细文档**，理解区域提示、注意力耦合、调度模式等核心概念。
+
 ![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
@@ -21,6 +23,14 @@ git clone https://github.com/gasdyueer/comfyui-pctextencode-region-composer.git
 
 ## 使用方法
 
+![使用方法](docs/images/prompt-control-composer.gif)
+
+**重要提示**：在使用本工具前，请务必先阅读 docs/ 目录中的文档，特别是：
+- [快速入门](./docs/01-快速入门.md) - 基础操作指南
+- [提示词语法大全](./docs/03-提示词语法大全.md) - 理解 Prompt Control 语法
+- [区域提示与注意力耦合](./docs/04-区域提示与注意力耦合.md) - 核心概念详解
+
+**基本步骤**：
 1. 在 ComfyUI 中右键添加节点 → `Gasdyueer/region` → **PC Region Composer**
 2. 点击节点内的 **Open Region Editor** 按钮，打开可视化编辑器
 3. 在编辑器中拖拽创建区域、填写提示词、配置参数
@@ -85,9 +95,17 @@ npm run build        # 构建到 web/editor/
 
 ## 相关资源
 
-- [ComfyUI Prompt Control](https://github.com/asagi4/comfyui-prompt-control)
-- [区域提示与注意力耦合指南](./docs/04-区域提示与注意力耦合.md)
-- [提示词语法大全](./docs/03-提示词语法大全.md)
+**核心文档（必读）**：
+- [快速入门](./docs/01-快速入门.md) - 基础操作指南
+- [节点详解](./docs/02-节点详解.md) - 节点功能说明
+- [提示词语法大全](./docs/03-提示词语法大全.md) - **必须理解**的 Prompt Control 语法
+- [区域提示与注意力耦合](./docs/04-区域提示与注意力耦合.md) - **核心概念**详解
+- [LoRA调度与高级技巧](./docs/05-LoRA调度与高级技巧.md) - 高级用法
+
+**外部依赖**：
+- [ComfyUI Prompt Control](https://github.com/asagi4/comfyui-prompt-control) - 必须安装的扩展
+
+**重要提醒**：本工具是**辅助工具**，生成的提示词需要配合 ComfyUI Prompt Control 使用。请反复阅读上述文档，理解语法规则和概念后再使用。
 
 ## 常见问题
 
