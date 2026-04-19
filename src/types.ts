@@ -54,6 +54,7 @@ export interface CanvasSettings {
   maskWeight: number;
   style: WeightStyle;
   normalization: string[];
+  scheduleMode: ScheduleMode;
 }
 
 export interface Feather {
