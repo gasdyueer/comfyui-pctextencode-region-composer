@@ -7,6 +7,7 @@ export type AppAction =
   | { type: 'UPDATE_REGION'; id: string; updates: Partial<Region> }
   | { type: 'DELETE_REGION'; id: string }
   | { type: 'SELECT_REGION'; id: string | null }
+  | { type: 'MOVE_REGION'; id: string; direction: 'up' | 'down' }
   | { type: 'IMPORT'; canvas: CanvasSettings; regions: Region[] }
   | { type: 'APPLY_PRESET'; canvasUpdates: Partial<CanvasSettings>; regions: Region[] }
   | { type: '__RESTORE__'; state: AppState };
@@ -72,6 +73,18 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case 'SELECT_REGION':
       return { ...state, selectedRegionId: action.id };
+
+    case 'MOVE_REGION': {
+      const idx = state.regions.findIndex(r => r.id === action.id);
+      if (idx === -1) return state;
+      const newRegions = [...state.regions];
+      if (action.direction === 'up' && idx > 0) {
+        [newRegions[idx - 1], newRegions[idx]] = [newRegions[idx], newRegions[idx - 1]];
+      } else if (action.direction === 'down' && idx < newRegions.length - 1) {
+        [newRegions[idx], newRegions[idx + 1]] = [newRegions[idx + 1], newRegions[idx]];
+      }
+      return { ...state, regions: newRegions };
+    }
 
     case 'IMPORT':
       return {

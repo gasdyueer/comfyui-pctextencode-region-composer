@@ -56,6 +56,9 @@ const AppContent: React.FC = () => {
   const deleteRegion = (id: string) =>
     dispatch({ type: 'DELETE_REGION', id });
 
+  const moveRegion = (id: string, direction: 'up' | 'down') =>
+    dispatch({ type: 'MOVE_REGION', id, direction });
+
   const selectRegion = (id: string | null) =>
     dispatch({ type: 'SELECT_REGION', id });
 
@@ -100,6 +103,7 @@ const AppContent: React.FC = () => {
           onUpdateRegion={updateRegion}
           onAddRegion={addRegion}
           onDeleteRegion={deleteRegion}
+          onMoveRegion={moveRegion}
           onSelectRegion={selectRegion}
         />
       </div>

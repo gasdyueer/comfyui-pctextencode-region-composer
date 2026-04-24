@@ -4,7 +4,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { CanvasSettings, Region, RegionType, MaskOp, OutputMode, CoupleMaskType } from '../types';
-import { Plus, Trash2, List, Box, Link2, Unlink, Zap, Maximize2, X } from 'lucide-react';
+import { Plus, Trash2, List, Box, Link2, Unlink, Zap, Maximize2, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { MASK_OPS, COUPLE_MASK_TYPES, QUICK_INSERTS } from '../constants';
 import SyntaxTooltip from './SyntaxTooltip';
 import Modal from './Modal';
@@ -16,6 +16,7 @@ interface RegionPanelProps {
   onUpdateRegion: (id: string, updates: Partial<Region>) => void;
   onAddRegion: () => void;
   onDeleteRegion: (id: string) => void;
+  onMoveRegion: (id: string, direction: 'up' | 'down') => void;
   onSelectRegion: (id: string | null) => void;
 }
 
@@ -56,6 +57,7 @@ const RegionPanel: React.FC<RegionPanelProps> = ({
   onUpdateRegion,
   onAddRegion,
   onDeleteRegion,
+  onMoveRegion,
   onSelectRegion,
 }) => {
   const selectedRegion = regions.find(r => r.id === selectedRegionId);
@@ -132,6 +134,26 @@ const RegionPanel: React.FC<RegionPanelProps> = ({
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{ backgroundColor: region.color }}
               />
+              <div className="flex flex-col gap-0.5">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMoveRegion(region.id, 'up');
+                  }}
+                  className={`p-0.5 hover:text-indigo-400 text-slate-600 transition-colors ${idx === 0 ? 'invisible' : ''}`}
+                >
+                  <ChevronUp className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMoveRegion(region.id, 'down');
+                  }}
+                  className={`p-0.5 hover:text-indigo-400 text-slate-600 transition-colors ${idx === regions.length - 1 ? 'invisible' : ''}`}
+                >
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+              </div>
               <span className="text-sm truncate flex-1 text-slate-300">
                 {region.prompt || `区域 ${idx + 1}`}
               </span>
