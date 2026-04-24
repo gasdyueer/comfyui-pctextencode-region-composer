@@ -27,6 +27,8 @@ const defaultRegion = (idx: number): Region => ({
   imaskIndex: 0,
   imaskWeight: 1.0,
   imaskOp: MaskOp.MULTIPLY,
+  scheduleStart: 0,
+  scheduleEnd: 1,
 });
 
 // ---------------------------------------------------------------------------
@@ -91,6 +93,12 @@ export function parseJsonInput(input: string): { canvas: CanvasSettings; regions
       scheduleStart: Number(src.scheduleStart ?? 0),
       scheduleEnd: Number(src.scheduleEnd ?? 1),
     };
+  });
+
+  // Clamp schedule values so start <= end
+  regions.forEach(r => {
+    r.scheduleStart = Math.max(0, Math.min(r.scheduleStart, r.scheduleEnd));
+    r.scheduleEnd = Math.max(r.scheduleStart, Math.min(r.scheduleEnd, 1));
   });
 
   return { canvas, regions };

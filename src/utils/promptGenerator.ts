@@ -114,7 +114,7 @@ interface ScheduleGroup {
 function groupBySchedule(regions: Region[]): ScheduleGroup[] {
   const map = new Map<string, { start: number; end: number; regions: Region[] }>();
   for (const r of regions) {
-    const key = `${r.scheduleStart}-${r.scheduleEnd}`;
+    const key = `${r.scheduleStart.toFixed(2)}-${r.scheduleEnd.toFixed(2)}`;
     let group = map.get(key);
     if (!group) {
       group = { start: r.scheduleStart, end: r.scheduleEnd, regions: [] };
@@ -123,16 +123,6 @@ function groupBySchedule(regions: Region[]): ScheduleGroup[] {
     group.regions.push(r);
   }
   return Array.from(map.values()).sort((a, b) => a.start - b.start);
-}
-
-/**
- * Check if all groups cover the full 0~1 range (no scheduling needed).
- */
-function isFullCoverage(groups: ScheduleGroup[]): boolean {
-  if (groups.length <= 1) return true;
-  const sorted = [...groups].sort((a, b) => a.start - b.start);
-  return sorted[0].start === 0 && sorted[sorted.length - 1].end === 1 &&
-    sorted.every((g, i) => i === sorted.length - 1 || g.end === sorted[i + 1].start);
 }
 
 /**
@@ -169,6 +159,11 @@ export function generatePromptString(canvas: CanvasSettings, regions: Region[]):
   }
 
   const groups = groupBySchedule(regions);
+
+  // Safety: if any region has invalid schedule (start > end), fallback to no scheduling
+  if (groups.some(g => g.start > g.end)) {
+    return prefix + generateGroupPrompt(canvas, regions);
+  }
 
   // Degenerate case: all regions have same interval (or single group) — no scheduling brackets
   if (groups.length <= 1) {

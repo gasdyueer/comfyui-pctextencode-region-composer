@@ -357,6 +357,7 @@ const RegionPanel: React.FC<RegionPanelProps> = ({
                         let v = parseFloat(e.target.value);
                         if (isNaN(v)) v = 0;
                         v = Math.max(0, Math.min(1, v));
+                        v = Math.min(v, selectedRegion.scheduleEnd);
                         onUpdateRegion(selectedRegion.id, { scheduleStart: v });
                       }}
                       className="w-16 bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-xs text-center focus:outline-none focus:border-indigo-500"
@@ -389,6 +390,7 @@ const RegionPanel: React.FC<RegionPanelProps> = ({
                         let v = parseFloat(e.target.value);
                         if (isNaN(v)) v = 1;
                         v = Math.max(0, Math.min(1, v));
+                        v = Math.max(v, selectedRegion.scheduleStart);
                         onUpdateRegion(selectedRegion.id, { scheduleEnd: v });
                       }}
                       className="w-16 bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-xs text-center focus:outline-none focus:border-indigo-500"
